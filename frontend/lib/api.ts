@@ -11,36 +11,67 @@ const api = axios.create({
   },
 });
 
-// Add auth token to requests
-api.interceptors.request.use(async (config) => {
-  const token = await AsyncStorage.getItem('auth_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+// Add auth token to requests - FIXED VERSION
+api.interceptors.request.use(
+  async (config) => {
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      console.log('Interceptor - Token exists:', !!token);
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+        console.log('Interceptor - Authorization header set');
+      } else {
+        console.log('Interceptor - No token found in storage');
+      }
+    } catch (error) {
+      console.error('Interceptor error:', error);
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
+
+// Add response interceptor to log errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('API Error:', error.response?.status, error.response?.data);
+    return Promise.reject(error);
+  }
+);
 
 // Auth
 export const authWithTelegram = async (initData: string) => {
   const response = await api.post('/auth/telegram', { init_data: initData });
   if (response.data.access_token) {
+    console.log('Saving token to storage...');
     await AsyncStorage.setItem('auth_token', response.data.access_token);
+    console.log('Token saved successfully');
   }
   return response.data;
 };
 
-// Emails
+// Emails - WITH TOKEN RETRY
 export const getMyEmail = async () => {
   const response = await api.get('/emails/me');
   return response.data;
 };
 
 export const addEmail = async (email: string) => {
+  // Get token directly before making request
+  const token = await AsyncStorage.getItem('auth_token');
+  console.log('addEmail - Token check:', !!token);
+  
   const response = await api.post('/emails', { email });
   return response.data;
 };
 
 export const sendVerification = async (emailId: string) => {
+  const token = await AsyncStorage.getItem('auth_token');
+  console.log('sendVerification - Token check:', !!token);
+  
   const response = await api.post(`/emails/${emailId}/send-verification`);
   return response.data;
 };
