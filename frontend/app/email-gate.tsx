@@ -26,16 +26,6 @@ export default function EmailGate() {
     setLoading(true);
     setError('');
     try {
-      // Check if user is authenticated
-      const token = await AsyncStorage.getItem('auth_token');
-      console.log('Auth token exists:', !!token);
-      
-      if (!token) {
-        setError('Not authenticated. Please restart the app.');
-        setLoading(false);
-        return;
-      }
-      
       const response = await addEmail(email);
       setEmailId(response.id);
       
