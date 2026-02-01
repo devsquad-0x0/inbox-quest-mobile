@@ -11,13 +11,16 @@ export default function Index() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isLoading && user) {
-      // Check email verification
-      if (!user.email || user.email_verification_status !== 'verified') {
-        router.replace('/email-gate');
-      } else {
-        router.replace('/(tabs)');
+    if (!isLoading) {
+      if (user) {
+        // User is authenticated, check email verification
+        if (!user.email || user.email_verification_status !== 'verified') {
+          router.replace('/email-gate');
+        } else {
+          router.replace('/(tabs)');
+        }
       }
+      // If no user, stay on this screen to show login button
     }
   }, [isLoading, user]);
 
