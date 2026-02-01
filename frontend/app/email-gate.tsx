@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function EmailGate() {
   const router = useRouter();
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, logout } = useAuth();
   const [step, setStep] = useState<'add' | 'verify'>('add');
   const [email, setEmail] = useState('');
   const [emailId, setEmailId] = useState('');
