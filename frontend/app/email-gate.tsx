@@ -193,6 +193,16 @@ export default function EmailGate() {
         <Text style={styles.note}>
           Mock mode: Code shown above for testing
         </Text>
+        
+        <TouchableOpacity 
+          style={styles.startOverButton}
+          onPress={async () => {
+            await logout();
+            router.replace('/');
+          }}
+        >
+          <Text style={styles.startOverText}>Start Over / Reset</Text>
+        </TouchableOpacity>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
