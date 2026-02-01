@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Image } fr
 import { useRouter } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
 import { authWithTelegram } from '../lib/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Index() {
   const router = useRouter();
