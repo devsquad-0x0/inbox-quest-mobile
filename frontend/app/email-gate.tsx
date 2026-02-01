@@ -322,4 +322,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
   },
+  startOverButton: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: '#3a1a1a',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#ff4444',
+  },
+  startOverText: {
+    color: '#ff6666',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
 });
