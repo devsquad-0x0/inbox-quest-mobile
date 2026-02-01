@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8001';
 
+// Create API instance
 const api = axios.create({
   baseURL: API_URL + '/api',
   timeout: 30000,
@@ -11,33 +12,46 @@ const api = axios.create({
   },
 });
 
-// Add auth token to requests - FIXED VERSION
+// Simple token getter
+let cachedToken: string | null = null;
+
+export const setToken = async (token: string) => {
+  cachedToken = token;
+  await AsyncStorage.setItem('auth_token', token);
+};
+
+export const getToken = async (): Promise<string | null> => {
+  if (cachedToken) return cachedToken;
+  cachedToken = await AsyncStorage.getItem('auth_token');
+  return cachedToken;
+};
+
+export const clearToken = async () => {
+  cachedToken = null;
+  await AsyncStorage.removeItem('auth_token');
+  await AsyncStorage.removeItem('user_data');
+};
+
+// Request interceptor
 api.interceptors.request.use(
   async (config) => {
-    try {
-      const token = await AsyncStorage.getItem('auth_token');
-      console.log('Interceptor - Token exists:', !!token);
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-        console.log('Interceptor - Authorization header set');
-      } else {
-        console.log('Interceptor - No token found in storage');
-      }
-    } catch (error) {
-      console.error('Interceptor error:', error);
+    const token = await getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Add response interceptor to log errors
+// Response interceptor
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    console.error('API Error:', error.response?.status, error.response?.data);
+  async (error) => {
+    if (error.response?.status === 401) {
+      // Token invalid, clear it
+      await clearToken();
+    }
     return Promise.reject(error);
   }
 );
@@ -46,32 +60,23 @@ api.interceptors.response.use(
 export const authWithTelegram = async (initData: string) => {
   const response = await api.post('/auth/telegram', { init_data: initData });
   if (response.data.access_token) {
-    console.log('Saving token to storage...');
-    await AsyncStorage.setItem('auth_token', response.data.access_token);
-    console.log('Token saved successfully');
+    await setToken(response.data.access_token);
   }
   return response.data;
 };
 
-// Emails - WITH TOKEN RETRY
+// Emails
 export const getMyEmail = async () => {
   const response = await api.get('/emails/me');
   return response.data;
 };
 
 export const addEmail = async (email: string) => {
-  // Get token directly before making request
-  const token = await AsyncStorage.getItem('auth_token');
-  console.log('addEmail - Token check:', !!token);
-  
   const response = await api.post('/emails', { email });
   return response.data;
 };
 
 export const sendVerification = async (emailId: string) => {
-  const token = await AsyncStorage.getItem('auth_token');
-  console.log('sendVerification - Token check:', !!token);
-  
   const response = await api.post(`/emails/${emailId}/send-verification`);
   return response.data;
 };
