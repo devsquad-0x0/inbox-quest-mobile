@@ -37,12 +37,26 @@ export default function Index() {
         username: 'testuser'
       }))}&auth_date=${Math.floor(Date.now() / 1000)}&hash=mockhash`;
       
+      console.log('Starting authentication...');
       const response = await authWithTelegram(mockInitData);
+      
+      console.log('Login successful, saving token...');
       await login(response.access_token, response.user);
+      
+      // Wait a bit to ensure token is saved
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Verify token was saved
+      const savedToken = await AsyncStorage.getItem('auth_token');
+      console.log('Token saved:', !!savedToken);
+      
+      if (!savedToken) {
+        throw new Error('Token was not saved properly');
+      }
       
     } catch (err: any) {
       console.error('Auth error:', err);
-      setError(err.response?.data?.detail || 'Authentication failed');
+      setError(err.response?.data?.detail || err.message || 'Authentication failed');
     } finally {
       setAuthenticating(false);
     }
