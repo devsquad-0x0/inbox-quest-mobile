@@ -6,7 +6,7 @@ import { authWithTelegram } from '../lib/api';
 
 export default function Index() {
   const router = useRouter();
-  const { user, isLoading, login } = useAuth();
+  const { user, isLoading, login, logout } = useAuth();
   const [authenticating, setAuthenticating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
