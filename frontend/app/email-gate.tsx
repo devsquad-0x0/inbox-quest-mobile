@@ -13,24 +13,32 @@ export default function EmailGate() {
   const [emailId, setEmailId] = useState('');
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [error, setError] = useState('');
 
   const handleAddEmail = async () => {
     if (!email || !email.includes('@')) {
-      Alert.alert('Error', 'Please enter a valid email address');
+      setError('Please enter a valid email address');
       return;
     }
 
     setLoading(true);
+    setError('');
     try {
       const response = await addEmail(email);
       setEmailId(response.id);
       
       // Automatically send verification
-      await sendVerification(response.id);
+      const verifyResponse = await sendVerification(response.id);
+      
+      // For mock mode, extract code from response if available
+      if (verifyResponse.code) {
+        setVerificationCode(verifyResponse.code);
+      }
+      
       setStep('verify');
-      Alert.alert('Success', `Verification code sent to ${email}`);
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.detail || 'Failed to add email');
+      setError(err.response?.data?.detail || 'Failed to add email');
     } finally {
       setLoading(false);
     }
