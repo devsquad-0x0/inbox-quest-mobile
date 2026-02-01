@@ -15,8 +15,15 @@ async def telegram_auth(request: TelegramAuthRequest):
         telegram_data = TelegramAuthService.verify_telegram_data(request.init_data)
         referral_code = telegram_data.get('start_param')
         account = await TelegramAuthService.find_or_create_user(telegram_data, referral_code)
+        
+        if not account:
+            raise ValueError("Failed to create user account")
+        
         account_id = str(account['_id'])
         details = await account_details.find_one({"account_id": account_id})
+        
+        if not details:
+            raise ValueError("Account details not found")
         primary_email = await emails.find_one({"account_id": account_id, "is_primary": True})
         
         email_status = "none"
