@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
 import { addEmail, sendVerification, verifyEmail, getMyEmail } from '../lib/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function EmailGate() {
   const router = useRouter();
