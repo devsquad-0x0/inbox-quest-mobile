@@ -51,8 +51,18 @@ class TelegramAuthService:
     async def find_or_create_user(telegram_data: Dict[str, Any], referral_code: Optional[str] = None) -> Dict[str, Any]:
         """Find existing user or create new one from Telegram data"""
         import json
+        from urllib.parse import unquote
         
-        user_data = json.loads(telegram_data.get('user', '{}'))
+        # Parse user data (might be URL-encoded JSON string)
+        user_str = telegram_data.get('user', '{}')
+        try:
+            # Try to URL-decode if needed
+            user_str = unquote(user_str)
+            user_data = json.loads(user_str)
+        except:
+            # If it fails, assume it's already a dict or use default
+            user_data = user_str if isinstance(user_str, dict) else {}
+        
         telegram_id = user_data.get('id')
         
         if not telegram_id:
