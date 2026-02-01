@@ -25,6 +25,16 @@ export default function EmailGate() {
     setLoading(true);
     setError('');
     try {
+      // Check if user is authenticated
+      const token = await AsyncStorage.getItem('auth_token');
+      console.log('Auth token exists:', !!token);
+      
+      if (!token) {
+        setError('Not authenticated. Please restart the app.');
+        setLoading(false);
+        return;
+      }
+      
       const response = await addEmail(email);
       setEmailId(response.id);
       
@@ -38,7 +48,9 @@ export default function EmailGate() {
       
       setStep('verify');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to add email');
+      console.error('Add email error:', err);
+      const errorMsg = err.response?.data?.detail || err.message || 'Failed to add email';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
