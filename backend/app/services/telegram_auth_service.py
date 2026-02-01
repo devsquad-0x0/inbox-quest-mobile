@@ -86,6 +86,13 @@ class TelegramAuthService:
         last_name = user_data.get('last_name')
         photo_url = user_data.get('photo_url')
         
+        # Ensure unique username (check if exists, add suffix if needed)
+        base_username = username
+        suffix = 1
+        while await accounts.find_one({"username": username}):
+            username = f"{base_username}{suffix}"
+            suffix += 1
+        
         # Handle referral
         referrer_id = None
         if referral_code:
