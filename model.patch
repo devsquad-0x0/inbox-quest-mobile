@@ -1,61 +1,95 @@
 diff --git a/frontend/context/AuthContext.tsx b/frontend/context/AuthContext.tsx
-index e80ce2b..a460ca2 100644
+index 7864ea0..714af96 100644
 --- a/frontend/context/AuthContext.tsx
 +++ b/frontend/context/AuthContext.tsx
-@@ -1,5 +1,6 @@
- import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
- import AsyncStorage from '@react-native-async-storage/async-storage';
-+import { setToken, clearToken, getToken } from '../lib/api';
- 
- interface User {
-   id: string;
-@@ -34,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
+@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
  
    const checkAuth = async () => {
      try {
--      const token = await AsyncStorage.getItem('auth_token');
-+      const token = await getToken();
+-      const token = await getToken();
++      const token = getAuthToken();
        const userStr = await AsyncStorage.getItem('user_data');
        
        if (token && userStr) {
-@@ -49,13 +50,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
+@@ -50,13 +50,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    };
  
    const login = async (token: string, userData: User) => {
--    await AsyncStorage.setItem('auth_token', token);
-+    await setToken(token);
+-    await setToken(token);
++    setAuthToken(token);
      await AsyncStorage.setItem('user_data', JSON.stringify(userData));
      setUser(userData);
    };
  
    const logout = async () => {
--    await AsyncStorage.removeItem('auth_token');
-+    await clearToken();
+-    await clearToken();
++    clearAuthToken();
      await AsyncStorage.removeItem('user_data');
      setUser(null);
    };
 diff --git a/model.patch b/model.patch
-index 640cbe5..e69de29 100644
+index 21129a2..e69de29 100644
 --- a/model.patch
 +++ b/model.patch
-@@ -1,20 +0,0 @@
--diff --git a/backend/app/routers/auth.py b/backend/app/routers/auth.py
--index da04ff9..b7b2c5e 100644
----- a/backend/app/routers/auth.py
--+++ b/backend/app/routers/auth.py
--@@ -15,8 +15,15 @@ async def telegram_auth(request: TelegramAuthRequest):
--         telegram_data = TelegramAuthService.verify_telegram_data(request.init_data)
--         referral_code = telegram_data.get('start_param')
--         account = await TelegramAuthService.find_or_create_user(telegram_data, referral_code)
--+        
--+        if not account:
--+            raise ValueError("Failed to create user account")
--+        
--         account_id = str(account['_id'])
--         details = await account_details.find_one({"account_id": account_id})
--+        
--+        if not details:
--+            raise ValueError("Account details not found")
--         primary_email = await emails.find_one({"account_id": account_id, "is_primary": True})
--         
--         email_status = "none"
+@@ -1,61 +0,0 @@
+-diff --git a/frontend/context/AuthContext.tsx b/frontend/context/AuthContext.tsx
+-index e80ce2b..a460ca2 100644
+---- a/frontend/context/AuthContext.tsx
+-+++ b/frontend/context/AuthContext.tsx
+-@@ -1,5 +1,6 @@
+- import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+- import AsyncStorage from '@react-native-async-storage/async-storage';
+-+import { setToken, clearToken, getToken } from '../lib/api';
+- 
+- interface User {
+-   id: string;
+-@@ -34,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
+- 
+-   const checkAuth = async () => {
+-     try {
+--      const token = await AsyncStorage.getItem('auth_token');
+-+      const token = await getToken();
+-       const userStr = await AsyncStorage.getItem('user_data');
+-       
+-       if (token && userStr) {
+-@@ -49,13 +50,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
+-   };
+- 
+-   const login = async (token: string, userData: User) => {
+--    await AsyncStorage.setItem('auth_token', token);
+-+    await setToken(token);
+-     await AsyncStorage.setItem('user_data', JSON.stringify(userData));
+-     setUser(userData);
+-   };
+- 
+-   const logout = async () => {
+--    await AsyncStorage.removeItem('auth_token');
+-+    await clearToken();
+-     await AsyncStorage.removeItem('user_data');
+-     setUser(null);
+-   };
+-diff --git a/model.patch b/model.patch
+-index 640cbe5..e69de29 100644
+---- a/model.patch
+-+++ b/model.patch
+-@@ -1,20 +0,0 @@
+--diff --git a/backend/app/routers/auth.py b/backend/app/routers/auth.py
+--index da04ff9..b7b2c5e 100644
+----- a/backend/app/routers/auth.py
+--+++ b/backend/app/routers/auth.py
+--@@ -15,8 +15,15 @@ async def telegram_auth(request: TelegramAuthRequest):
+--         telegram_data = TelegramAuthService.verify_telegram_data(request.init_data)
+--         referral_code = telegram_data.get('start_param')
+--         account = await TelegramAuthService.find_or_create_user(telegram_data, referral_code)
+--+        
+--+        if not account:
+--+            raise ValueError("Failed to create user account")
+--+        
+--         account_id = str(account['_id'])
+--         details = await account_details.find_one({"account_id": account_id})
+--+        
+--+        if not details:
+--+            raise ValueError("Account details not found")
+--         primary_email = await emails.find_one({"account_id": account_id, "is_primary": True})
+--         
+--         email_status = "none"
