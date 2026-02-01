@@ -193,4 +193,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
   },
+  resetButton: {
+    marginTop: 16,
+    padding: 12,
+  },
+  resetText: {
+    color: '#ff6666',
+    fontSize: 14,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
+  },
 });
