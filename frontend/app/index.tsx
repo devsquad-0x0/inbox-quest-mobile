@@ -105,6 +105,16 @@ export default function Index() {
         <Text style={styles.note}>
           Note: Using mock authentication for testing
         </Text>
+        
+        <TouchableOpacity 
+          style={styles.resetButton}
+          onPress={async () => {
+            await logout();
+            setError(null);
+          }}
+        >
+          <Text style={styles.resetText}>Reset App Data</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
