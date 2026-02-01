@@ -10,7 +10,7 @@ router = APIRouter()
 
 @router.post("/telegram", response_model=AuthResponse)
 async def telegram_auth(request: TelegramAuthRequest):
-    \"\"\"Authenticate user with Telegram WebApp init data\"\"\"
+    """Authenticate user with Telegram WebApp init data"""
     try:
         # Verify Telegram data
         telegram_data = TelegramAuthService.verify_telegram_data(request.init_data)
