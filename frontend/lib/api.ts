@@ -3,6 +3,29 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:8001';
 
+// Token management
+let authToken: string | null = null;
+
+export const setAuthToken = (token: string) => {
+  authToken = token;
+  AsyncStorage.setItem('auth_token', token);
+};
+
+export const getAuthToken = (): string | null => {
+  return authToken;
+};
+
+export const clearAuthToken = () => {
+  authToken = null;
+  AsyncStorage.removeItem('auth_token');
+  AsyncStorage.removeItem('user_data');
+};
+
+// Initialize token from storage
+AsyncStorage.getItem('auth_token').then(token => {
+  if (token) authToken = token;
+});
+
 // Create API instance
 const api = axios.create({
   baseURL: API_URL + '/api',
@@ -12,32 +35,11 @@ const api = axios.create({
   },
 });
 
-// Simple token getter
-let cachedToken: string | null = null;
-
-export const setToken = async (token: string) => {
-  cachedToken = token;
-  await AsyncStorage.setItem('auth_token', token);
-};
-
-export const getToken = async (): Promise<string | null> => {
-  if (cachedToken) return cachedToken;
-  cachedToken = await AsyncStorage.getItem('auth_token');
-  return cachedToken;
-};
-
-export const clearToken = async () => {
-  cachedToken = null;
-  await AsyncStorage.removeItem('auth_token');
-  await AsyncStorage.removeItem('user_data');
-};
-
-// Request interceptor
+// Request interceptor - SYNCHRONOUS
 api.interceptors.request.use(
-  async (config) => {
-    const token = await getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+  (config) => {
+    if (authToken) {
+      config.headers.Authorization = `Bearer ${authToken}`;
     }
     return config;
   },
@@ -47,10 +49,9 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
+  (error) => {
     if (error.response?.status === 401) {
-      // Token invalid, clear it
-      await clearToken();
+      clearAuthToken();
     }
     return Promise.reject(error);
   }
@@ -60,7 +61,7 @@ api.interceptors.response.use(
 export const authWithTelegram = async (initData: string) => {
   const response = await api.post('/auth/telegram', { init_data: initData });
   if (response.data.access_token) {
-    await setToken(response.data.access_token);
+    setAuthToken(response.data.access_token);
   }
   return response.data;
 };
