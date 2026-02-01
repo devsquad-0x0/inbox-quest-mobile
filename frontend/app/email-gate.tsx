@@ -46,11 +46,12 @@ export default function EmailGate() {
 
   const handleVerifyCode = async () => {
     if (!code || code.length !== 6) {
-      Alert.alert('Error', 'Please enter the 6-digit code');
+      setError('Please enter the 6-digit code');
       return;
     }
 
     setLoading(true);
+    setError('');
     try {
       await verifyEmail(emailId, code);
       
@@ -64,11 +65,9 @@ export default function EmailGate() {
         });
       }
       
-      Alert.alert('Success', 'Email verified successfully!', [
-        { text: 'Continue', onPress: () => router.replace('/(tabs)') }
-      ]);
+      router.replace('/(tabs)');
     } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.detail || 'Invalid verification code');
+      setError(err.response?.data?.detail || 'Invalid verification code');
     } finally {
       setLoading(false);
     }
@@ -86,7 +85,7 @@ export default function EmailGate() {
           <Text style={styles.subtitle}>
             {step === 'add' 
               ? 'Add your email to start earning' 
-              : 'Enter the verification code we sent you'}
+              : 'Enter the verification code below'}
           </Text>
         </View>
 
@@ -102,7 +101,14 @@ export default function EmailGate() {
               autoCapitalize="none"
               keyboardType="email-address"
               autoComplete="email"
+              editable={!loading}
             />
+            
+            {error ? (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
             
             <TouchableOpacity 
               style={[styles.button, loading && styles.buttonDisabled]}
@@ -118,6 +124,14 @@ export default function EmailGate() {
           </View>
         ) : (
           <View style={styles.form}>
+            {verificationCode ? (
+              <View style={styles.codeDisplay}>
+                <Text style={styles.codeLabel}>Your Verification Code:</Text>
+                <Text style={styles.codeText}>{verificationCode}</Text>
+                <Text style={styles.codeHint}>Enter this code below</Text>
+              </View>
+            ) : null}
+            
             <Text style={styles.label}>Verification Code</Text>
             <TextInput
               style={styles.input}
@@ -127,7 +141,14 @@ export default function EmailGate() {
               onChangeText={setCode}
               keyboardType="number-pad"
               maxLength={6}
+              editable={!loading}
             />
+            
+            {error ? (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
             
             <TouchableOpacity 
               style={[styles.button, loading && styles.buttonDisabled]}
@@ -143,7 +164,13 @@ export default function EmailGate() {
 
             <TouchableOpacity 
               style={styles.linkButton}
-              onPress={() => sendVerification(emailId)}
+              onPress={async () => {
+                const response = await sendVerification(emailId);
+                if (response.code) {
+                  setVerificationCode(response.code);
+                }
+              }}
+              disabled={loading}
             >
               <Text style={styles.linkText}>Resend Code</Text>
             </TouchableOpacity>
@@ -151,7 +178,7 @@ export default function EmailGate() {
         )}
 
         <Text style={styles.note}>
-          Mock email: Verification code will be logged in console
+          Mock mode: Code shown above for testing
         </Text>
       </KeyboardAvoidingView>
     </SafeAreaView>
