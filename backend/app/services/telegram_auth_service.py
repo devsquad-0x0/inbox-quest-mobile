@@ -7,6 +7,8 @@ from app.config import settings
 from app.database import accounts, account_details, account_gamification
 from app.utils.helpers import generate_referral_code
 import logging
+import json
+from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 
@@ -50,41 +52,48 @@ class TelegramAuthService:
     @staticmethod
     async def find_or_create_user(telegram_data: Dict[str, Any], referral_code: Optional[str] = None) -> Dict[str, Any]:
         """Find existing user or create new one from Telegram data"""
-        import json
-        from urllib.parse import unquote
-        
         # Parse user data (might be URL-encoded JSON string)
         user_str = telegram_data.get('user', '{}')
+        
         try:
-            # Try to URL-decode if needed
-            user_str = unquote(user_str)
-            user_data = json.loads(user_str)
+            # Try to URL-decode and parse as JSON
+            user_str_decoded = unquote(user_str)
+            user_data = json.loads(user_str_decoded)
         except:
-            # If it fails, assume it's already a dict or use default
-            user_data = user_str if isinstance(user_str, dict) else {}
+            try:
+                # Try without decoding
+                user_data = json.loads(user_str)
+            except:
+                # Last resort: assume it's already parsed or empty
+                user_data = {} if not isinstance(user_str, dict) else user_str
         
         telegram_id = user_data.get('id')
-        
         if not telegram_id:
-            raise ValueError("Telegram ID not found")
+            raise ValueError(f"Telegram ID not found in user data: {user_data}")
         
+        # Check if user exists
         existing_detail = await account_details.find_one({"source_type": "telegram", "source_id": str(telegram_id)})
         
         if existing_detail:
             account = await accounts.find_one({"_id": existing_detail["account_id"]})
-            return account
+            if account:
+                logger.info(f"Existing user found: {telegram_id}")
+                return account
         
+        # Create new user
         username = user_data.get('username', f"user_{telegram_id}")
         first_name = user_data.get('first_name', 'User')
         last_name = user_data.get('last_name')
         photo_url = user_data.get('photo_url')
         
+        # Handle referral
         referrer_id = None
         if referral_code:
             referrer = await accounts.find_one({"referral_code": referral_code})
             if referrer:
                 referrer_id = str(referrer["_id"])
         
+        # Create account
         account_doc = {
             "username": username,
             "password": "",
@@ -98,6 +107,7 @@ class TelegramAuthService:
         account_result = await accounts.insert_one(account_doc)
         account_id = str(account_result.inserted_id)
         
+        # Create account details
         detail_doc = {
             "account_id": account_id,
             "first_name": first_name,
@@ -110,6 +120,7 @@ class TelegramAuthService:
         }
         await account_details.insert_one(detail_doc)
         
+        # Create gamification record
         gamification_doc = {
             "account_id": account_id,
             "xp": 0,
@@ -123,6 +134,7 @@ class TelegramAuthService:
         }
         await account_gamification.insert_one(gamification_doc)
         
+        # Get the created account
         account = await accounts.find_one({"_id": account_id})
         logger.info(f"Created new user: {username} (Telegram ID: {telegram_id})")
         
