@@ -23,20 +23,20 @@ async def telegram_auth(request: TelegramAuthRequest):
         account_id = str(account['_id'])
         
         # Get account details
-        details = await account_details.find_one({\"account_id\": account_id})
+        details = await account_details.find_one({"account_id": account_id})
         
         # Get primary email
         primary_email = await emails.find_one({
-            \"account_id\": account_id,
-            \"is_primary\": True
+            "account_id": account_id,
+            "is_primary": True
         })
         
-        email_status = \"none\"
+        email_status = "none"
         if primary_email:
-            if primary_email.get(\"status\") == \"verified\":
-                email_status = \"verified\"
+            if primary_email.get("status") == "verified":
+                email_status = "verified"
             else:
-                email_status = \"pending\"
+                email_status = "pending"
         
         # Generate JWT
         access_token, expires_at = TelegramAuthService.generate_jwt(account_id)
@@ -63,14 +63,14 @@ async def telegram_auth(request: TelegramAuthRequest):
         )
         
     except ValueError as e:
-        logger.error(f\"Telegram auth failed: {str(e)}\")
+        logger.error(f"Telegram auth failed: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(e)
         )
     except Exception as e:
-        logger.error(f\"Unexpected error in telegram auth: {str(e)}\")
+        logger.error(f"Unexpected error in telegram auth: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=\"Authentication failed\"
+            detail="Authentication failed"
         )
