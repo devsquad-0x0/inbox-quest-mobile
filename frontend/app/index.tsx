@@ -57,6 +57,16 @@ export default function Index() {
     );
   }
 
+  // If user exists, don't show login screen (useEffect will handle routing)
+  if (user) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+        <Text style={styles.loadingText}>Redirecting...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.content}>
