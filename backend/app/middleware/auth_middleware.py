@@ -35,7 +35,8 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
             )
         
         # Get account from database
-        account = await accounts.find_one({"_id": account_id})
+        from bson import ObjectId
+        account = await accounts.find_one({"_id": ObjectId(account_id)})
         if not account:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
