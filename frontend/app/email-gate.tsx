@@ -261,4 +261,42 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 24,
   },
+  codeDisplay: {
+    backgroundColor: '#1a3a1a',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 24,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+  },
+  codeLabel: {
+    fontSize: 14,
+    color: '#aaa',
+    marginBottom: 8,
+  },
+  codeText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    letterSpacing: 4,
+    marginBottom: 8,
+  },
+  codeHint: {
+    fontSize: 12,
+    color: '#666',
+  },
+  errorBox: {
+    backgroundColor: '#3a1a1a',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#ff4444',
+  },
+  errorText: {
+    color: '#ff6666',
+    fontSize: 14,
+    textAlign: 'center',
+  },
 });
