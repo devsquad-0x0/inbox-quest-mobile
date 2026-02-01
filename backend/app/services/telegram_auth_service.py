@@ -142,7 +142,8 @@ class TelegramAuthService:
         await account_gamification.insert_one(gamification_doc)
         
         # Get the created account
-        account = await accounts.find_one({"_id": account_id})
+        from bson import ObjectId
+        account = await accounts.find_one({"_id": ObjectId(account_id)})
         logger.info(f"Created new user: {username} (Telegram ID: {telegram_id})")
         
         return account
