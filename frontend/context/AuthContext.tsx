@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setToken, clearToken, getToken } from '../lib/api';
 
 interface User {
   id: string;
@@ -34,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkAuth = async () => {
     try {
-      const token = await AsyncStorage.getItem('auth_token');
+      const token = await getToken();
       const userStr = await AsyncStorage.getItem('user_data');
       
       if (token && userStr) {
@@ -49,13 +50,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (token: string, userData: User) => {
-    await AsyncStorage.setItem('auth_token', token);
+    await setToken(token);
     await AsyncStorage.setItem('user_data', JSON.stringify(userData));
     setUser(userData);
   };
 
   const logout = async () => {
-    await AsyncStorage.removeItem('auth_token');
+    await clearToken();
     await AsyncStorage.removeItem('user_data');
     setUser(null);
   };
