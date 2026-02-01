@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkAuth = async () => {
     try {
-      const token = await getToken();
+      const token = getAuthToken();
       const userStr = await AsyncStorage.getItem('user_data');
       
       if (token && userStr) {
@@ -50,13 +50,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (token: string, userData: User) => {
-    await setToken(token);
+    setAuthToken(token);
     await AsyncStorage.setItem('user_data', JSON.stringify(userData));
     setUser(userData);
   };
 
   const logout = async () => {
-    await clearToken();
+    clearAuthToken();
     await AsyncStorage.removeItem('user_data');
     setUser(null);
   };
