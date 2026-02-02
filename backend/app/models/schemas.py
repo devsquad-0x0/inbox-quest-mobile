@@ -62,6 +62,7 @@ class AddEmailRequest(BaseModel):
 class SendVerificationResponse(BaseModel):
     sent: bool
     expires_at: datetime
+    code: Optional[str] = None  # Only returned in mock mode for testing
 
 class VerifyEmailRequest(BaseModel):
     code: str

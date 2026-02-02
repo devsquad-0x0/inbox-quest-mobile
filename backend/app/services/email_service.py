@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
 from app.database import emails, isps, confirmation_emails
+from bson import ObjectId
 from app.utils.helpers import generate_verification_code
 from app.config import settings
 import logging
@@ -38,7 +39,7 @@ class EmailService:
         
         # Update email status
         await emails.update_one(
-            {"_id": email_id},
+            {"_id": ObjectId(email_id)},
             {"$set": {"status": "verification_sent", "updated_at": datetime.utcnow()}}
         )
         
@@ -77,7 +78,7 @@ class EmailService:
         
         # Update email status
         await emails.update_one(
-            {"_id": email_id},
+            {"_id": ObjectId(email_id)},
             {"$set": {"status": "verified", "updated_at": datetime.utcnow()}}
         )
         

@@ -21,10 +21,12 @@ export const clearAuthToken = () => {
   AsyncStorage.removeItem('user_data');
 };
 
-// Initialize token from storage
-AsyncStorage.getItem('auth_token').then(token => {
-  if (token) authToken = token;
-});
+// Initialize token from storage (only on client side)
+if (typeof window !== 'undefined') {
+  AsyncStorage.getItem('auth_token').then(token => {
+    if (token) authToken = token;
+  });
+}
 
 // Create API instance
 const api = axios.create({

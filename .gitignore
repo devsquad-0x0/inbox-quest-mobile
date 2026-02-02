@@ -30,6 +30,11 @@ next-env.d.ts
 dist/
 dist
 
+# Metro & cache
+.expo/
+.metro-cache/
+frontend/.metro-cache/
+
 # Environment files (comprehensive coverage)
 
 *token.json*

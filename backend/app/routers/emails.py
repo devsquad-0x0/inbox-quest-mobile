@@ -92,7 +92,7 @@ async def send_verification(email_id: str, current_user=Depends(get_current_user
     account_id = str(current_user["_id"])
     
     # Get email
-    email = await emails.find_one({"_id": email_id, "account_id": account_id})
+    email = await emails.find_one({"_id": ObjectId(email_id), "account_id": account_id})
     if not email:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -104,7 +104,8 @@ async def send_verification(email_id: str, current_user=Depends(get_current_user
     
     return SendVerificationResponse(
         sent=result["sent"],
-        expires_at=result["expires_at"]
+        expires_at=result["expires_at"],
+        code=result.get("code")  # Only in mock mode
     )
 
 @router.post("/{email_id}/verify", response_model=VerifyEmailResponse)
@@ -113,7 +114,7 @@ async def verify_email(email_id: str, request: VerifyEmailRequest, current_user=
     account_id = str(current_user["_id"])
     
     # Get email
-    email = await emails.find_one({"_id": email_id, "account_id": account_id})
+    email = await emails.find_one({"_id": ObjectId(email_id), "account_id": account_id})
     if not email:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
